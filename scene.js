@@ -104,7 +104,6 @@ class WebGLObject {
             gl.drawElements(gl.TRIANGLES, this.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
         } else if (this.renderMode == Scene.RENDER_MODES.IMATGE) {
 
-            console.log(this.texture);
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -206,6 +205,13 @@ class Scene {
 
     addObject(Object) {
         this.webGlObjects.push(Object)
+        this.initBuffers()
+    }
+
+    removeObject(name) {
+        this.webGlObjects = this.webGlObjects.filter(item => item.name !== name);
+
+        this.initBuffers()
     }
 
     getObject(name) {
@@ -342,7 +348,7 @@ class Scene {
         this.gl.uniform3f(this.program.LaIndex, 1.0, 1.0, 1.0);
         this.gl.uniform3f(this.program.LdIndex, 1.0, 1.0, 1.0);
         this.gl.uniform3f(this.program.LsIndex, 1.0, 1.0, 1.0);
-        this.gl.uniform3f(this.program.PositionIndex, 0.5, 0.5, 0.0); // en coordenadas del ojo
+        this.gl.uniform3f(this.program.PositionIndex, 0.0, 0.0, 0.0); // en coordenadas del ojo
     }
 
     initHandlers(canvasId) {

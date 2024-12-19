@@ -39,7 +39,6 @@ window.onload = () => {
         });
 
         var mode = e.target.value.toLowerCase()
-        console.log(mode)
         document.getElementById("render-mode-"+mode).classList.remove("d-none")
     })
 
@@ -117,7 +116,6 @@ function hexToRgbArray(hex) {
 }
 
 function getParameterObject(renderMode) {
-    console.log(renderMode)
     switch (renderMode) {
         case "MATERIAL":
             return {}
@@ -133,7 +131,6 @@ function getParameterObject(renderMode) {
                 color2: hexToRgbArray(color2),
                 scale: parseFloat(scale)
             };
-            console.log(result)
             return result
         case "PROCEDURAL_NUVOLS":
             
@@ -146,7 +143,6 @@ function getParameterObject(renderMode) {
                 color2: hexToRgbArray(sky),
                 scale: parseFloat(scaleNuvol)
             };
-            console.log(resultNuvol)
             return resultNuvol
         case "WIREFRAMES":
             return {}
@@ -156,6 +152,11 @@ function getParameterObject(renderMode) {
         default:
             return {}
     }
+}
+
+var newGeometry = ""
+function setNewGeometry() {
+    newGeometry = prompt("Set your new geometry")
 }
 
 function setModel() {
@@ -180,21 +181,23 @@ function setModel() {
     }
 
     var aplicarTransformacio = document.getElementById("aplicar-transformacio").checked
-    console.log(aplicarTransformacio, "trans")
 
     Array.from(objectSelect.options).forEach(option => {
         if (option.selected) {
+            scene.updateObject(option.value, {material: materials[materialsSelect.value], renderMode: Scene.RENDER_MODES[renderSelect.value], param: getParameterObject(renderSelect.value)})
             if (aplicarTransformacio)
-                scene.updateObject(option.value, {material: materials[materialsSelect.value], renderMode: Scene.RENDER_MODES[renderSelect.value], transformation: newTrans,  param: getParameterObject(renderSelect.value), resize: newScale})
-            else
-                scene.updateObject(option.value, {material: materials[materialsSelect.value], renderMode: Scene.RENDER_MODES[renderSelect.value], param: getParameterObject(renderSelect.value)})
+                scene.updateObject(option.value, {transformation: newTrans, resize: newScale})
+            if (newGeometry !== ""){
+                scene.updateObject(option.value, {geometry: JSON.parse(newGeometry)})
+                scene.initBuffers()
+            }
             
             scene.requestAnimationFrame()
         }
     });
     
     showSelectedInfoObjects()
-
+    newGeometry = ""
 }
 
 function setLight() {
@@ -321,4 +324,36 @@ function showSelectedInfoLight() {
 function showSelectedInfoAnimation() {
     const infoDiv = document.getElementById("inf-div");
     infoDiv.innerHTML = "";
+}
+
+
+function newObject() {
+    var objName = prompt("Name for the new object");
+    var objectSelect = document.getElementById("objects")
+
+    scene.addObject(new WebGLObject(objName, exampleCube, White_plastic, mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, 0.0]), Scene.RENDER_MODES.MATERIAL, {}, 0.5))
+    let option = document.createElement("option");
+    option.value = objName;
+    option.textContent = objName;
+    objectSelect.appendChild(option);
+
+    scene.requestAnimationFrame()
+}
+
+function deleteObjects() {
+    var objectSelect = document.getElementById("objects")
+
+    const selectedValues = Array.from(objectSelect.selectedOptions).map(option => option.value);
+    selectedValues.forEach(element => {
+        scene.removeObject(element)
+
+        for (let i = objectSelect.options.length - 1; i >= 0; i--) {
+            const option = objectSelect.options[i];
+            if (option.value == element)
+                objectSelect.remove(i);
+        }
+    });
+
+    scene.requestAnimationFrame()
+
 }

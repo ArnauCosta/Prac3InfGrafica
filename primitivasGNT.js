@@ -51,7 +51,7 @@ var exampleCube = {  // 24 vértices, 12 triángulos
                  
 };
 
-var exampleCover = {  // 13 vértices, 12 triángulos
+var exampleCover = {
 
   "vertices" : [  1,      0,     0.0,   0.0,  0.0,  1.0,   1,     0.5, 
                   0.866,  0.5,   0.0,   0.0,  0.0,  1.0,   0.933, 0.75,
@@ -71,6 +71,8 @@ var exampleCover = {  // 13 vértices, 12 triángulos
                 6, 7, 12, 7, 8, 12, 8, 9, 12, 9, 10, 12, 10, 11, 12, 11, 0, 12]
 
 };
+
+
 
 var exampleCone = {  // 24 vértices, 12 triángulos
 
