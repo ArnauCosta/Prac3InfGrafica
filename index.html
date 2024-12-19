@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+
+    <meta charset="utf-8">
+    
+    <title> Arnau Costa Pont </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+      
+    <script id="myVertexShader" 
+          type="x-shader/x-vertex">#version 300 es
+
+          uniform mat4 projectionMatrix;
+          uniform mat4 modelViewMatrix;
+          uniform mat3 normalMatrix;
+          
+          in vec3 VertexPosition;
+          in vec3 VertexNormal;
+          in vec2 VertexTexcoords; // Afegeix les coordenades de textura
+          uniform   float Scale;
+
+          out vec3 N, ec;
+          out vec3 texCoord; // Coordenades de textura que passen al fragment shader
+          
+          void main()  {
+              N  = normalize(normalMatrix * VertexNormal);
+              vec4 ecPosition = modelViewMatrix * vec4(VertexPosition, 1.0);
+              ec = vec3(ecPosition);
+          
+              gl_Position = projectionMatrix * ecPosition;
+              //texCoord = VertexTexcoords; // Assigna les coordenades de textura
+              texCoord = VertexPosition * Scale;
+
+          }
+      
+    </script>
+    
+    <script id="myFragmentShader" 
+          type="x-shader/x-fragment">#version 300 es
+
+          precision mediump float;
+          
+          struct LightData {
+              vec3 Position; // Light position in eye coordinates
+              vec3 La;       // Ambient light intensity
+              vec3 Ld;       // Diffuse light intensity
+              vec3 Ls;       // Specular light intensity
+          };
+          uniform LightData Light;
+          
+          struct MaterialData {
+              vec3 Ka;       // Ambient reflectance
+              vec3 Kd;       // Diffuse reflectance
+              vec3 Ks;       // Specular reflectance
+              float alpha;   // Shininess
+          };
+          uniform MaterialData Material;
+          
+          
+          uniform int renderMode;
+          
+          in vec3 N, ec; // Normal and eye-coordinates from vertex shader
+          in vec3 texCoord;
+          out vec4 fragmentColor;
+
+          uniform sampler2D u_texture;
+
+          uniform vec3 Color1;
+          uniform vec3 Color2;
+
+          vec4 permute(vec4 x)       { return mod(((x*34.0)+1.0)*x, 289.0); }
+          vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+          
+          float snoise(vec3 v) {
+            
+            const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
+            const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
+            
+            // First corner
+            vec3 i  = floor(v + dot(v, C.yyy) );
+            vec3 x0 =   v - i + dot(i, C.xxx) ;
+            
+            // Other corners
+            vec3 g = step(x0.yzx, x0.xyz);
+            vec3 l = 1.0 - g;
+            vec3 i1 = min( g.xyz, l.zxy );
+            vec3 i2 = max( g.xyz, l.zxy );
+            
+            //  x0 = x0 - 0. + 0.0 * C
+            vec3 x1 = x0 - i1 + 1.0 * C.xxx;
+            vec3 x2 = x0 - i2 + 2.0 * C.xxx;
+            vec3 x3 = x0 - 1. + 3.0 * C.xxx;
+            
+            // Permutations
+            i = mod(i, 289.0 );
+            vec4 p = permute( permute( permute( i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+                                              + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
+                                              + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+                             
+            // Gradients
+            // ( N*N points uniformly over a square, mapped onto an octahedron.)
+            float n_ = 1.0/7.0; // N=7
+            vec3  ns = n_ * D.wyz - D.xzx;
+            vec4 j = p - 49.0 * floor(p * ns.z *ns.z);  //  mod(p,N*N)
+            vec4 x_ = floor(j * ns.z);
+            vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)
+            vec4 x = x_ *ns.x + ns.yyyy;
+            vec4 y = y_ *ns.x + ns.yyyy;
+            vec4 h = 1.0 - abs(x) - abs(y);
+            vec4 b0 = vec4( x.xy, y.xy );
+            vec4 b1 = vec4( x.zw, y.zw );
+            //vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;
+            //vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;
+            vec4 s0 = floor(b0)*2.0 + 1.0;
+            vec4 s1 = floor(b1)*2.0 + 1.0;
+            vec4 sh = -step(h, vec4(0.0));
+            vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+            vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+            vec3 p0 = vec3(a0.xy,h.x);
+            vec3 p1 = vec3(a0.zw,h.y);
+            vec3 p2 = vec3(a1.xy,h.z);
+            vec3 p3 = vec3(a1.zw,h.w);
+             
+            //Normalise gradients
+            vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+            p0 *= norm.x;
+            p1 *= norm.y;
+            p2 *= norm.z;
+            p3 *= norm.w;
+             
+            // Mix final noise value
+            vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+            m = m * m;
+            return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),dot(p2,x2), dot(p3,x3) ) );
+                                                          
+          }
+
+          
+          vec3 phong (vec3 Kd, vec3 N, vec3 L, vec3 V) {
+            
+            vec3  ambient  = Material.Ka * Light.La;
+            vec3  diffuse  = vec3(0.0);
+            vec3  specular = vec3(0.0);
+            
+            float NdotL    = dot (N,L);
+            
+            if (NdotL > 0.0) {
+            
+              vec3  R       = reflect(-L, N);;
+              float RdotV_n = pow(max(0.0, dot(R,V)), Material.alpha);
+             
+              diffuse  = NdotL   * (Light.Ld * Kd);
+              specular = RdotV_n * (Light.Ls * Material.Ks);
+              
+            }
+            
+            return (ambient + diffuse + specular);
+              
+          }
+
+          vec3 phong2 (vec3 N, vec3 L, vec3 V) {
+        
+            vec3  ambient  = Material.Ka * Light.La;
+            vec3  diffuse  = vec3(0.0);
+            vec3  specular = vec3(0.0);
+            
+            float NdotL    = dot (N,L);
+            
+            if (NdotL > 0.0) {
+              vec3  R       = reflect(-L, N);;
+              float RdotV_n = pow(max(0.0, dot(R,V)), Material.alpha);
+              
+              diffuse  = NdotL   * (Light.Ld * Material.Kd);
+              specular = RdotV_n * (Light.Ls * Material.Ks);
+            }
+            
+            return (ambient + diffuse + specular);
+            
+          }
+
+
+          
+          void main() {
+            if (renderMode == 0) { // Material
+
+                vec3 normal = normalize(N);
+                vec3 lightDir = normalize(Light.Position - ec);
+                vec3 viewDir = normalize(-ec);
+            
+                // Ambient component
+                vec3 ambient = Light.La * Material.Ka;
+            
+                // Diffuse component
+                float diff = max(dot(normal, lightDir), 0.0);
+                vec3 diffuse = diff * Light.Ld * Material.Kd;
+            
+                // Specular component
+                vec3 reflectDir = reflect(-lightDir, normal);
+                float spec = pow(max(dot(viewDir, reflectDir), 0.0), Material.alpha);
+                vec3 specular = spec * Light.Ls * Material.Ks;
+            
+                // Combine components
+                vec3 color = ambient + diffuse + specular;
+            
+                // Add transparency
+                fragmentColor = vec4(color, 1.0);
+
+            } else if (renderMode == 1) { // Imatge
+
+              vec3 n = normalize(N);
+              vec3 L = normalize(Light.Position - ec);
+              vec3 V = normalize(-ec);
+
+              fragmentColor = texture(u_texture, texCoord.xy) * vec4(phong2(n,L,V), 1.0) * 1.6;
+              
+            } else if (renderMode == 2) { // Sol
+
+                vec3 n = normalize(N);
+                vec3 L = normalize(Light.Position - ec);
+                vec3 V = normalize(-ec);
+                
+                float s     = snoise(texCoord);
+                s           = clamp(abs(s)*2.6,0.0,1.0);
+                vec3  newKd = mix (Color1, Color2, s);
+        
+                fragmentColor = vec4( phong(newKd, n,L,V), 1.0);
+                //fragmentColor = vec4(1.0, 0.0, 1.0, 1.0);
+
+            } else if (renderMode == 3) {
+              vec3 n = normalize(N);
+              vec3 L = normalize(Light.Position - ec);
+              vec3 V = normalize(-ec);
+              
+              float s     = snoise(texCoord) * 0.5 + 0.5;
+              s           = clamp(abs(s)*2.6,0.0,1.0);
+              vec3  newKd = mix (Color1, Color2, s);
+      
+              fragmentColor = vec4(phong(newKd, n,L,V), 1.0);
+          } else if (renderMode == 4) {
+              fragmentColor = vec4(1.0, 1.0, 1.0, 0.4); 
+          } else {
+                // En cas que no sigui una seleccio correcte es tria magenta per detectar el error
+                fragmentColor = vec4(1.0, 0.0, 1.0, 1.0);
+            }
+
+          }
+      
+    </script>  
+    
+  </head> 
+
+  <body>
+  
+    <div class="d-flex">
+      <canvas id="myCanvas" width="600" height="600">
+        El Navegador no soporta HTML5
+      </canvas>
+  
+      <div class="d-flex flex-column">
+        <select class="form-select border-none rounded-0 h-100" name="objects" id="objects" multiple>
+        </select>
+        <select class="form-select border-none rounded-0 h-100 lights d-none" name="lights" id="lights" multiple>
+        </select>
+      </div>
+      <div class="m-2 flex-grow-1">
+        <h1 class="text-center">
+          Options
+        </h1>
+        <hr>
+        <nav class="nav nav-pills flex-column flex-sm-row">
+          <button id="models-btn" class="flex-sm-fill text-sm-center nav-link active" aria-current="page" onclick="activateTab('models')">Models</button>
+          <button id="light-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('light')">Light</button>
+          <button id="animation-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('animation')">Animation</button>
+        </nav>
+        <br>
+        <div id="aria-models">
+          <div class="d-flex w-100">
+            <div class="w-100 me-1">
+              <label for="materials" class="form-label">Material:</label>
+              <select class="form-select" name="materials" id="materials"></select>
+            </div>
+            <div class="w-100 ms-1">
+              <label for="render-mode" class="form-label">Render mode:</label>
+              <select class="form-select" name="render-mode" id="render-mode">
+                <option value="MATERIAL">MATERIAL</option>
+                <option value="IMATGE">IMATGE</option>
+                <option value="PROCEDURAL_SOL">PROCEDURAL_SOL</option>
+                <option value="PROCEDURAL_NUVOLS">PROCEDURAL_NUVOLS</option>
+                <option value="WIREFRAMES">WIREFRAMES</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <hr>
+            <h3>
+              Transformacio
+            </h3>
+            <div class="d-flex">
+              <div class="me-4">
+                <h4>Translacio</h4>
+                <div class="d-flex">
+                  <input id="trans-x" class="text-center" style="width: 40px;" type="text" value="0">
+                  <input id="trans-y" class="text-center" style="width: 40px;" type="text" value="0">
+                  <input id="trans-z" class="text-center" style="width: 40px;" type="text" value="0">
+                </div>
+              </div>
+              <div class="me-4">
+                <h4>Escalat</h4>
+                <input id="factor-escalat" class="text-center" style="width: 60px;" type="number" value="1">
+              </div>
+              <div>
+                <h4>Aplicar</h4>
+                <label for="aplicar-transformacio">Aplicar transformacio</label>
+                <input type="checkbox" name="aplicar-transformacio" id="aplicar-transformacio">
+              </div>
+            </div>
+          </div>
+          <div class="">
+            <div id="render-mode-material">
+            </div>
+            <div class="d-none" id="render-mode-imatge">
+              Imatge
+            </div>
+            <div class="d-none" id="render-mode-procedural_sol">
+              <hr>
+              <h3 class="mt-1">Params sol</h3>
+              <div class="d-flex">
+                <div class="me-3">
+                  <label for="color1-sol" class="form-label">Color 1:</label>
+                  <input type="color" id="color1-sol" class="form-control form-control-color" value="#ff5733">
+                </div>
+                <div class="me-3">
+                  <label for="color2-sol" class="form-label">Color 2:</label>
+                  <input type="color" id="color2-sol" class="form-control form-control-color" value="#ff5733">
+                </div>
+                <div class="flex-grow-1">
+                  <label for="sol-scale" class="form-label">Scale:</label>
+                  <input type="range" class="form-range" id="sol-scale" min="1" max="100" step="1" value="1">
+                </div>
+              </div>
+            </div>
+            <div class="d-none" id="render-mode-procedural_nuvols">
+              <hr>
+              <h3 class="mt-1">Params nuvol</h3>
+              <div class="d-flex">
+                <div class="me-3">
+                  <label for="color1-nuvol" class="form-label">Sky:</label>
+                  <input type="color" id="color1-nuvol" class="form-control form-control-color" value="#ff5733">
+                </div>
+                <div class="me-3">
+                  <label for="color2-nuvol" class="form-label">Cloud:</label>
+                  <input type="color" id="color2-nuvol" class="form-control form-control-color" value="#ff5733">
+                </div>
+                <div class="flex-grow-1">
+                  <label for="nuvol-scale" class="form-label">Scale:</label>
+                  <input type="range" class="form-range" id="nuvol-scale" min="1" max="100" step="1" value="1">
+                </div>
+              </div>
+            </div>
+            <div class="d-none" id="render-mode-wireframes">
+              Wireframes
+            </div>
+          </div>
+          <br>
+          <button onclick="setModel()" class="btn btn-primary">
+            Set
+          </button>
+        </div>
+        <div id="aria-light" class="d-none">
+          <label for="bootstrap-select" class="form-label">Light:</label>
+          <select class="form-select" name="materials" id="materials"></select>
+          <br>
+          <button onclick="setLight()" class="btn btn-primary">
+            Set
+          </button>
+        </div>
+        <div id="aria-animation" class="d-none">
+          <label for="bootstrap-select" class="form-label">Animation:</label>
+          <select class="form-select" name="materials" id="materials"></select>
+          <br>
+          <button onclick="setAnimation()" class="btn btn-primary">
+            Set
+          </button>
+        </div>
+      </div>
+    </div>
+    <hr class="mt-0">
+    <div>
+      <div class="" id="inf-div"></div>
+    </div>
+
+
+      
+    <script src="gl-matrix-min.js"></script>
+    <script src="scene.js"></script>
+    <script src="materiales.js"></script>
+    <script src="imports.js"></script>
+    <script src="primitivasGNT.js"></script>
+    <script src="sceneDeclaration.js"></script>
+    <script src="index.js"></script>
+
+      
+  </body>
+      
+</html>
