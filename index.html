@@ -7,7 +7,7 @@
     
     <title> Arnau Costa Pont </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
+    <link rel="stylesheet" href="variables.css">
       
     <script id="myVertexShader" 
           type="x-shader/x-vertex">#version 300 es
@@ -48,7 +48,9 @@
               vec3 Ld;       // Diffuse light intensity
               vec3 Ls;       // Specular light intensity
           };
-          uniform LightData Light;
+          //uniform LightData Light;
+          uniform int numLights;
+          uniform LightData Lights[10];
           
           struct MaterialData {
               vec3 Ka;       // Ambient reflectance
@@ -72,6 +74,33 @@
 
           vec4 permute(vec4 x)       { return mod(((x*34.0)+1.0)*x, 289.0); }
           vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+          vec3 computeLight(vec3 normal, vec3 viewDir, vec3 Kd) {
+            vec3 color = vec3(0.0);
+        
+            for (int i = 0; i < numLights; i++) {
+                vec3 lightDir = normalize(Lights[i].Position - ec);
+                vec3 R = reflect(-lightDir, normal);
+                
+                // Ambient
+                vec3 ambient = Lights[i].La * Material.Ka;
+                
+                // Difusa
+                float diff = max(dot(normal, lightDir), 0.0);
+                vec3 diffuse = diff * Lights[i].Ld * Kd;
+        
+                // Especular
+                float spec = 0.0;
+                if (diff > 0.0) {
+                    spec = pow(max(dot(viewDir, R), 0.0), Material.alpha);
+                }
+                vec3 specular = spec * Lights[i].Ls * Material.Ks;
+        
+                color += ambient + diffuse + specular;
+            }
+        
+            return color;
+          }
           
           float snoise(vec3 v) {
             
@@ -139,113 +168,59 @@
 
           
           vec3 phong (vec3 Kd, vec3 N, vec3 L, vec3 V) {
-            
-            vec3  ambient  = Material.Ka * Light.La;
+            vec3  ambient  = Material.Ka * vec3(0.0);
             vec3  diffuse  = vec3(0.0);
             vec3  specular = vec3(0.0);
-            
-            float NdotL    = dot (N,L);
-            
-            if (NdotL > 0.0) {
-            
-              vec3  R       = reflect(-L, N);;
-              float RdotV_n = pow(max(0.0, dot(R,V)), Material.alpha);
-             
-              diffuse  = NdotL   * (Light.Ld * Kd);
-              specular = RdotV_n * (Light.Ls * Material.Ks);
-              
-            }
-            
-            return (ambient + diffuse + specular);
-              
-          }
-
-          vec3 phong2 (vec3 N, vec3 L, vec3 V) {
         
-            vec3  ambient  = Material.Ka * Light.La;
-            vec3  diffuse  = vec3(0.0);
-            vec3  specular = vec3(0.0);
-            
             float NdotL    = dot (N,L);
-            
             if (NdotL > 0.0) {
-              vec3  R       = reflect(-L, N);;
-              float RdotV_n = pow(max(0.0, dot(R,V)), Material.alpha);
-              
-              diffuse  = NdotL   * (Light.Ld * Material.Kd);
-              specular = RdotV_n * (Light.Ls * Material.Ks);
+                vec3  R       = reflect(-L, N);
+                float RdotV_n = pow(max(0.0, dot(R,V)), Material.alpha);
+        
+                diffuse  = NdotL   * Kd;
+                specular = RdotV_n * Material.Ks;
             }
-            
+        
             return (ambient + diffuse + specular);
-            
           }
-
 
           
           void main() {
-            if (renderMode == 0) { // Material
-
-                vec3 normal = normalize(N);
-                vec3 lightDir = normalize(Light.Position - ec);
-                vec3 viewDir = normalize(-ec);
-            
-                // Ambient component
-                vec3 ambient = Light.La * Material.Ka;
-            
-                // Diffuse component
-                float diff = max(dot(normal, lightDir), 0.0);
-                vec3 diffuse = diff * Light.Ld * Material.Kd;
-            
-                // Specular component
-                vec3 reflectDir = reflect(-lightDir, normal);
-                float spec = pow(max(dot(viewDir, reflectDir), 0.0), Material.alpha);
-                vec3 specular = spec * Light.Ls * Material.Ks;
-            
-                // Combine components
-                vec3 color = ambient + diffuse + specular;
-            
-                // Add transparency
-                fragmentColor = vec4(color, 1.0);
-
-            } else if (renderMode == 1) { // Imatge
-
-              vec3 n = normalize(N);
-              vec3 L = normalize(Light.Position - ec);
-              vec3 V = normalize(-ec);
-
-              fragmentColor = texture(u_texture, texCoord.xy) * vec4(phong2(n,L,V), 1.0) * 1.6;
-              
-            } else if (renderMode == 2) { // Sol
-
-                vec3 n = normalize(N);
-                vec3 L = normalize(Light.Position - ec);
-                vec3 V = normalize(-ec);
-                
-                float s     = snoise(texCoord);
-                s           = clamp(abs(s)*2.6,0.0,1.0);
-                vec3  newKd = mix (Color1, Color2, s);
+            vec3 normal = normalize(N);
+            vec3 viewDir = normalize(-ec);
         
-                fragmentColor = vec4( phong(newKd, n,L,V), 1.0);
-                //fragmentColor = vec4(1.0, 0.0, 1.0, 1.0);
-
-            } else if (renderMode == 3) {
-              vec3 n = normalize(N);
-              vec3 L = normalize(Light.Position - ec);
-              vec3 V = normalize(-ec);
-              
-              float s     = snoise(texCoord) * 0.5 + 0.5;
-              s           = clamp(abs(s)*2.6,0.0,1.0);
-              vec3  newKd = mix (Color1, Color2, s);
-      
-              fragmentColor = vec4(phong(newKd, n,L,V), 1.0);
-          } else if (renderMode == 4) {
-              fragmentColor = vec4(1.0, 1.0, 1.0, 0.4); 
-          } else {
-                // En cas que no sigui una seleccio correcte es tria magenta per detectar el error
+            if (renderMode == 0) { // MATERIAL
+                vec3 color = computeLight(normal, viewDir, Material.Kd);
+                fragmentColor = vec4(color, 1.0);
+        
+            } else if (renderMode == 1) { // IMATGE
+                vec4 texColor = texture(u_texture, texCoord.xy);
+                vec3 color = computeLight(normal, viewDir, Material.Kd) * vec3(texColor);
+                fragmentColor = vec4(color * 1.6, 1.0);
+        
+            } else if (renderMode == 2) { // SOL
+                float s = snoise(texCoord);
+                s = clamp(abs(s)*2.6,0.0,1.0);
+                vec3 newKd = mix(Color1, Color2, s);
+        
+                vec3 color = computeLight(normal, viewDir, newKd);
+                fragmentColor = vec4(color, 1.0);
+        
+            } else if (renderMode == 3) { // PROCEDURAL_NUVOLS
+                float s = snoise(texCoord)*0.5 + 0.5;
+                s = clamp(abs(s)*2.6,0.0,1.0);
+                vec3 newKd = mix(Color1, Color2, s);
+        
+                vec3 color = computeLight(normal, viewDir, newKd);
+                fragmentColor = vec4(color, 1.0);
+        
+            } else if (renderMode == 4) { // WIREFRAMES
+                fragmentColor = vec4(1.0, 1.0, 1.0, 0.4);
+        
+            } else {
                 fragmentColor = vec4(1.0, 0.0, 1.0, 1.0);
             }
-
-          }
+        }
       
     </script>  
     
@@ -259,25 +234,27 @@
       </canvas>
   
       <div class="d-flex flex-column">
-        <button class="btn btn-primary rounded-0" onclick="newObject()">
+        <button class="btn btn-primary rounded-0" style="width: 110px;" onclick="newObject()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
           </svg>
-          New
+          Afegir
         </button>
         <select class="form-select border-none rounded-0 h-100" name="objects" id="objects" multiple>
         </select>
-        <select class="form-select border-none rounded-0 h-100 lights d-none" name="lights" id="lights" multiple>
+        <select onchange="showSelectedInfoLight()" class="form-select border-none rounded-0 h-100 lights d-none" name="lights" id="lights" multiple>
         </select>
       </div>
       <div class="m-2 flex-grow-1">
-        <h1 class="text-center">
-          Options
-        </h1>
+        <div class="d-flex w-100">
+          <h1 class="text-center w-100 mb-0">
+            Options
+          </h1>
+        </div>
         <hr>
         <nav class="nav nav-pills flex-column flex-sm-row">
           <button id="models-btn" class="flex-sm-fill text-sm-center nav-link active" aria-current="page" onclick="activateTab('models')">Models</button>
-          <button id="light-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('light')">Light</button>
+          <button id="light-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('light')">Llums</button>
           <button id="animation-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('animation')">Animation</button>
         </nav>
         <br>
@@ -307,9 +284,17 @@
               <div class="me-4">
                 <h4>Translacio</h4>
                 <div class="d-flex">
-                  <input id="trans-x" class="text-center" style="width: 40px;" type="text" value="0">
-                  <input id="trans-y" class="text-center" style="width: 40px;" type="text" value="0">
-                  <input id="trans-z" class="text-center" style="width: 40px;" type="text" value="0">
+                  <input id="trans-x" class="text-center multi-input left" style="width: 40px;" type="text" value="0">
+                  <input id="trans-y" class="text-center multi-input" style="width: 40px;" type="text" value="0">
+                  <input id="trans-z" class="text-center multi-input right" style="width: 40px;" type="text" value="0">
+                </div>
+              </div>
+              <div class="me-4">
+                <h4>Rotacio</h4>
+                <div class="d-flex">
+                  <input id="rot-x" class="text-center multi-input left" style="width: 40px;" type="text" value="0">
+                  <input id="rot-y" class="text-center multi-input" style="width: 40px;" type="text" value="0">
+                  <input id="rot-z" class="text-center multi-input right" style="width: 40px;" type="text" value="0">
                 </div>
               </div>
               <div class="me-4">
@@ -327,7 +312,26 @@
             <div id="render-mode-material">
             </div>
             <div class="d-none" id="render-mode-imatge">
-              Imatge
+              <hr>
+              <div class="w-100 ms-1 d-flex">
+                <div class="me-3">
+                  <h3>
+                    Imatge
+                  </h3>
+                  <label for="image-texture" class="form-label">Texture:</label>
+                  <select onchange="changeImage()" class="form-select" name="image-texture" id="image-texture">
+                    <option value="gat.png" selected>gat</option>
+                    <option value="torch.png">torch</option>
+                    <option value="steve.png">steve</option>
+                    <option value="abella.png">abella</option>
+                    <option value="mgat.png">mgat</option>
+                    <option value="senyal.png">senyal</option>
+                    <option value="cottage_diffuse3.png">cottage_diffuse3</option>
+                  </select>
+                </div>
+                <div class="flex-grow-1"></div>
+                <img id="img-texture" class="me-3 mt-2" src="imatges/gat.png" alt="" width="110" height="110">
+              </div>
             </div>
             <div class="d-none" id="render-mode-procedural_sol">
               <hr>
@@ -366,7 +370,6 @@
               </div>
             </div>
             <div class="d-none" id="render-mode-wireframes">
-              Wireframes
             </div>
           </div>
           <br>
@@ -374,28 +377,60 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-90deg-down" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M4.854 14.854a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V3.5A2.5 2.5 0 0 1 6.5 1h8a.5.5 0 0 1 0 1h-8A1.5 1.5 0 0 0 5 3.5v9.793l3.146-3.147a.5.5 0 0 1 .708.708z"/>
             </svg>
-            Apply
+            Aplica
           </button>
           <button onclick="setNewGeometry()" class="btn btn-secondary">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bounding-box" viewBox="0 0 16 16">
               <path d="M5 2V0H0v5h2v6H0v5h5v-2h6v2h5v-5h-2V5h2V0h-5v2zm6 1v2h2v6h-2v2H5v-2H3V5h2V3zm1-2h3v3h-3zm3 11v3h-3v-3zM4 15H1v-3h3zM1 4V1h3v3z"/>
             </svg>
-            New Geometry
+            Geometria
           </button>
           <button onclick="deleteObjects()" class="btn btn-danger">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
               <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
               <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
             </svg>
-            Delete
+            Elimina
           </button>
         </div>
         <div id="aria-light" class="d-none">
-          <label for="bootstrap-select" class="form-label">Light:</label>
-          <select class="form-select" name="materials" id="materials"></select>
+          <div class="d-flex">
+            <div class="me-3">
+              <h3>
+                Posicio
+              </h3>
+              <div class="d-flex">
+                <input id="llum-x" class="text-center multi-input left" style="width: 40px;" type="text" value="0">
+                <input id="llum-y" class="text-center multi-input" style="width: 40px;" type="text" value="0">
+                <input id="llum-z" class="text-center multi-input right" style="width: 40px;" type="text" value="0">
+              </div>
+            </div>
+            <div class="flex-grow-1 me-3">
+              <h3>
+                Color
+              </h3>
+              <input class="form-control" id="llum-color" type="color" value="#ff5733">
+            </div>
+            <div class="me-3">
+              <h3>
+                Intensitat
+              </h3>
+              <input id="intensity-light" class="text-center form-control" type="number" value="1">
+            </div>
+          </div>
           <br>
           <button onclick="setLight()" class="btn btn-primary">
-            Set
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-90deg-down" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M4.854 14.854a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V3.5A2.5 2.5 0 0 1 6.5 1h8a.5.5 0 0 1 0 1h-8A1.5 1.5 0 0 0 5 3.5v9.793l3.146-3.147a.5.5 0 0 1 .708.708z"/>
+            </svg>
+            Aplica
+          </button>
+          <button onclick="deleteLights()" class="btn btn-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+              <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+            </svg>
+            Delete
           </button>
         </div>
         <div id="aria-animation" class="d-none">
@@ -413,15 +448,77 @@
       <div class="" id="inf-div"></div>
     </div>
 
+    <div class="position-fixed top-0 p-1">
+      <button class="rounded border-0 bg-white pt-0" onclick="importJson()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+          <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+        </svg>
+      </button>
+      <button class="rounded border-0 bg-white pt-0" onclick="exportJson()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+        </svg>
+      </button>
+      <button class="rounded border-0 bg-white pt-0" onclick="modalOptions()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+          <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+        </svg>
+      </button>
+    </div>
+    <input class="d-none" type="file" id="fileInput" accept="application/json" />
 
-      
-    <script src="gl-matrix-min.js"></script>
-    <script src="scene.js"></script>
-    <script src="materiales.js"></script>
-    <script src="imports.js"></script>
-    <script src="primitivasGNT.js"></script>
-    <script src="sceneDeclaration.js"></script>
-    <script src="index.js"></script>
+    <div class="modal fade" id="myOptionsModal" tabindex="-1" aria-labelledby="myOptionsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="myOptionsModalLabel">Your Options</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+
+            <form onsubmit="sendModal()" id="sceneForm" class="p-1">
+              <div class="mb-3">
+                <label for="zeta" class="form-label">Zeta:</label>
+                <input type="number" step="0.01" id="zeta" name="zeta" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label for="phi" class="form-label">Phi:</label>
+                <input type="number" step="0.01" id="phi" name="phi" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label for="radius" class="form-label">Radius:</label>
+                <input type="number" step="0.01" id="radius" name="radius" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label for="fovy" class="form-label">Fovy:</label>
+                <input type="number" step="0.01" id="fovy" name="fovy" class="form-control">
+              </div>
+              <div class="mb-3">
+                <label for="bg-color" class="form-label">Clear Color:</label>
+                <input type="text" id="bg-color" name="bg-color" class="form-control">
+              </div>
+            </form>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button onclick="sendModal()" id="updateSceneBtn" type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="js/gl-matrix-min.js"></script>
+    <script src="js/scene.js"></script>
+    <script src="js/materiales.js"></script>
+    <script src="js/imports.js"></script>
+    <script src="js/primitivasGNT.js"></script>
+    <!-- <script src="js/end.js"></script> -->
+    <script src="js/sceneDeclaration.js"></script>
+    <script src="js/index.js"></script>
 
       
   </body>

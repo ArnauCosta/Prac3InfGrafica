@@ -1,0 +1,136 @@
+/* Base Buttons: Ensure transitions are present */
+.btn {
+    transition: color .15s ease-in-out,
+                background-color .15s ease-in-out,
+                border-color .15s ease-in-out,
+                box-shadow .15s ease-in-out;
+  }
+  
+  /* PRIMARY COLOR: rgb(0, 102, 102) */
+  .btn-primary {
+    background-color: rgb(0, 102, 102) !important;
+    border-color: rgb(0, 102, 102) !important;
+    color: #fff !important;
+  }
+  
+  .btn-primary:hover,
+  .btn-primary:focus,
+  .btn-primary:active {
+    background-color: rgba(0, 102, 102, 0.85) !important;
+    border-color: rgba(0, 102, 102, 0.85) !important;
+    color: #fff !important;
+  }
+  
+  .btn-primary:focus,
+  .btn-primary.focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 102, 0.25) !important;
+  }
+  
+  /* Primary Links */
+  a.text-primary,
+  a.link-primary {
+    color: rgb(0, 102, 102) !important;
+    transition: color .15s ease-in-out;
+  }
+  
+  a.text-primary:hover,
+  a.link-primary:hover {
+    color: rgba(0, 102, 102, 0.85) !important;
+  }
+  
+  /* Nav links (Primary) */
+  .nav-link {
+    color: rgb(0, 102, 102) !important;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out;
+  }
+  
+  .nav-link:hover {
+    color: rgba(0, 102, 102, 0.85) !important;
+  }
+  
+  .nav-link.active {
+    background-color: rgb(0, 102, 102) !important;
+    color: #fff !important;
+  }
+  
+  /* SECONDARY COLOR: rgb(102, 153, 153) */
+  .btn-secondary {
+    background-color: rgb(102, 153, 153) !important;
+    border-color: rgb(102, 153, 153) !important;
+    color: #fff !important;
+  }
+  
+  .btn-secondary:hover,
+  .btn-secondary:focus,
+  .btn-secondary:active {
+    background-color: rgba(102, 153, 153, 0.85) !important;
+    border-color: rgba(102, 153, 153, 0.85) !important;
+    color: #fff !important;
+  }
+  
+  .btn-secondary:focus,
+  .btn-secondary.focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 153, 153, 0.25) !important;
+  }
+  
+  /* Secondary Links */
+  a.text-secondary,
+  a.link-secondary {
+    color: rgb(102, 153, 153) !important;
+    transition: color .15s ease-in-out;
+  }
+  
+  a.text-secondary:hover,
+  a.link-secondary:hover {
+    color: rgba(102, 153, 153, 0.85) !important;
+  }
+  
+  /* DANGER COLOR: rgb(217, 69, 69) – adjusted from your snippet */
+  .btn-danger {
+    background-color: rgb(217, 69, 69) !important;
+    border-color: rgb(217, 69, 69) !important;
+    color: #fff !important;
+  }
+  
+  .btn-danger:hover,
+  .btn-danger:focus,
+  .btn-danger:active {
+    background-color: rgba(217, 69, 69, 0.85) !important;
+    border-color: rgba(217, 69, 69, 0.85) !important;
+    color: #fff !important;
+  }
+  
+  .btn-danger:focus,
+  .btn-danger.focus {
+    box-shadow: 0 0 0 0.2rem rgba(217, 69, 69, 0.25) !important;
+  }
+  
+  /* Danger Links */
+  a.text-danger,
+  a.link-danger {
+    color: rgb(217, 69, 69) !important;
+    transition: color .15s ease-in-out;
+  }
+  
+  a.text-danger:hover,
+  a.link-danger:hover {
+    color: rgba(217, 69, 69, 0.85) !important;
+  }
+  
+  .multi-input{
+    border-radius: 0;
+    border-color: black;
+    border-width: 1px;
+  }
+
+  .multi-input.left{
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-right-width: 0;
+  }
+
+  .multi-input.right{
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-left-width: 0;
+  }
