@@ -101,20 +101,32 @@ class WebGLObject {
         gl.uniform1i(gl.getUniformLocation(program, 'renderMode'), this.renderMode);
 
         if (this.renderMode == Scene.RENDER_MODES.MATERIAL) {
+
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
             gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 8 * 4, 0);
             gl.vertexAttribPointer(program.vertexNormalAttribute, 3, gl.FLOAT, false, 8 * 4, 3 * 4);
+            gl.vertexAttribPointer(program.vertexTexcoordsAttribute, 2, gl.FLOAT, false, 8 * 4, 6 * 4);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
             gl.drawElements(gl.TRIANGLES, this.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
+
         } else if (this.renderMode == Scene.RENDER_MODES.IMATGE) {
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.uniform1i(gl.getUniformLocation(program, "u_texture"), 0);
+            gl.uniform1i(gl.getUniformLocation(program, "myTexture"), 0);
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    
+            // Optionally, set wrapping to avoid distortion at the edges
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+
             gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 8 * 4, 0);
             gl.vertexAttribPointer(program.vertexNormalAttribute, 3, gl.FLOAT, false, 8 * 4, 3 * 4);
+            gl.vertexAttribPointer(program.vertexTexcoordsAttribute, 2, gl.FLOAT, false, 8 * 4, 6 * 4);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
             gl.drawElements(gl.TRIANGLES, this.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
 
@@ -126,6 +138,7 @@ class WebGLObject {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
             gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 8 * 4, 0);
             gl.vertexAttribPointer(program.vertexNormalAttribute, 3, gl.FLOAT, false, 8 * 4, 3 * 4);
+            gl.vertexAttribPointer(program.vertexTexcoordsAttribute, 2, gl.FLOAT, false, 8 * 4, 6 * 4);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
             gl.drawElements(gl.TRIANGLES, this.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
         } else if (this.renderMode == Scene.RENDER_MODES.PROCEDURAL_NUVOLS) {
@@ -136,12 +149,14 @@ class WebGLObject {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
             gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 8 * 4, 0);
             gl.vertexAttribPointer(program.vertexNormalAttribute, 3, gl.FLOAT, false, 8 * 4, 3 * 4);
+            gl.vertexAttribPointer(program.vertexTexcoordsAttribute, 2, gl.FLOAT, false, 8 * 4, 6 * 4);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
             gl.drawElements(gl.TRIANGLES, this.geometry.indices.length, gl.UNSIGNED_SHORT, 0);
         } else if (this.renderMode == Scene.RENDER_MODES.WIREFRAMES) {
             gl.lineWidth(2.0);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
             gl.vertexAttribPointer(program.vertexPositionAttribute, 3, gl.FLOAT, false, 8 * 4, 0);
+            gl.vertexAttribPointer(program.vertexTexcoordsAttribute, 2, gl.FLOAT, false, 8 * 4, 6 * 4);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.wireframeIndexBuffer);
 
             gl.enableVertexAttribArray(program.vertexPositionAttribute);
@@ -170,7 +185,7 @@ class WebGLLight {
         WebGLLight.usedNames.add(name);
     }
 
-    
+
     static releaseName(name) {
         WebGLLight.usedNames.delete(name);
     }
@@ -246,12 +261,12 @@ class Scene {
 
     updateObject(name, updates) {
         const object = this.webGlObjects.find(obj => obj.name === name);
-    
+
         if (!object) {
             console.error(`Object with name "${name}" not found.`);
             return;
         }
-    
+
         Object.keys(updates).forEach(key => {
             if (object.hasOwnProperty(key)) {
                 object[key] = updates[key];
@@ -259,17 +274,17 @@ class Scene {
                 console.warn(`Property "${key}" does not exist on the object "${name}".`);
             }
         });
-    
+
     }
 
     updateLight(name, updates) {
         const object = this.webGlLights.find(obj => obj.name === name);
-    
+
         if (!object) {
             console.error(`Object with name "${name}" not found.`);
             return;
         }
-    
+
         Object.keys(updates).forEach(key => {
             if (object.hasOwnProperty(key)) {
                 object[key] = updates[key];
@@ -277,7 +292,7 @@ class Scene {
                 console.warn(`Property "${key}" does not exist on the object "${name}".`);
             }
         });
-    
+
     }
 
     render() {
@@ -297,7 +312,7 @@ class Scene {
         requestAnimationFrame(this.drawScene.bind(this))
         setTimeout(() => {
             requestAnimationFrame(this.drawScene.bind(this))
-        }, 200)
+        }, 500)
     }
 
     requestAnimationFrame() {
@@ -362,6 +377,15 @@ class Scene {
         this.program.normalMatrixIndex = this.gl.getUniformLocation(this.program, "normalMatrix");
         this.gl.enableVertexAttribArray(this.program.vertexNormalAttribute);
 
+        this.program.vertexTexcoordsAttribute = this.gl.getAttribLocation(this.program, "VertexTexcoords");
+        this.gl.enableVertexAttribArray(this.program.vertexTexcoordsAttribute);
+        this.program.myTextureIndex = this.gl.getUniformLocation(this.program, 'myTexture');
+        this.program.repetition = this.gl.getUniformLocation(this.program, "repetition");
+        this.gl.uniform1i(this.program.myTextureIndex, 3);
+        this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+
+        this.gl.uniform1f(this.program.repetition, 1.0);
+
         this.program.KaIndex = this.gl.getUniformLocation(this.program, "Material.Ka");
         this.program.KdIndex = this.gl.getUniformLocation(this.program, "Material.Kd");
         this.program.KsIndex = this.gl.getUniformLocation(this.program, "Material.Ks");
@@ -385,7 +409,7 @@ class Scene {
         this.program.LightsLa = [];
         this.program.LightsLd = [];
         this.program.LightsLs = [];
-    
+
         for (let i = 0; i < 10; i++) {
             this.program.LightsPosition.push(this.gl.getUniformLocation(this.program, `Lights[${i}].Position`));
             this.program.LightsLa.push(this.gl.getUniformLocation(this.program, `Lights[${i}].La`));
@@ -405,20 +429,20 @@ class Scene {
 
     setShaderLight() {
         const gl = this.gl;
-    
+
         // Limitem el nombre de llums al màxim definit als shaders
         const maxLights = 10;
         const numLights = Math.min(this.webGlLights.length, maxLights);
         gl.uniform1i(this.program.numLightsIndex, numLights);
-    
+
         for (let i = 0; i < numLights; i++) {
             const light = this.webGlLights[i];
-    
+
             // La, Ld, Ls poden ser iguals per simplicitat o variar
-            let La = [light.color[0]*0.2*light.intensity, light.color[1]*0.2*light.intensity, light.color[2]*0.2*light.intensity];
-            let Ld = [light.color[0]*light.intensity,     light.color[1]*light.intensity,     light.color[2]*light.intensity];
-            let Ls = [light.color[0]*light.intensity,     light.color[1]*light.intensity,     light.color[2]*light.intensity];
-    
+            let La = [light.color[0] * 0.2 * light.intensity, light.color[1] * 0.2 * light.intensity, light.color[2] * 0.2 * light.intensity];
+            let Ld = [light.color[0] * light.intensity, light.color[1] * light.intensity, light.color[2] * light.intensity];
+            let Ls = [light.color[0] * light.intensity, light.color[1] * light.intensity, light.color[2] * light.intensity];
+
             gl.uniform3fv(this.program.LightsPosition[i], light.position);
             gl.uniform3fv(this.program.LightsLa[i], La);
             gl.uniform3fv(this.program.LightsLd[i], Ld);
@@ -426,12 +450,12 @@ class Scene {
         }
     }
 
-    setClearColor(color){
+    setClearColor(color) {
         this.bgColor = color
         this.gl.clearColor(color[0], color[1], color[2], color[3]);
     }
 
-    getClearColor(){
+    getClearColor() {
         return this.bgColor
     }
 
@@ -563,7 +587,7 @@ class Scene {
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
             gl.generateMipmap(gl.TEXTURE_2D);
-    
+
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
@@ -576,22 +600,22 @@ class Scene {
     static TransformationMatrix(position, rotation) {
         // position: [px, py, pz]
         // rotation: [rx, ry, rz] in radians
-        
+
         // Create a new identity matrix
         const transformation = mat4.create();
-    
+
         // Apply translation
         mat4.translate(transformation, transformation, position);
-    
+
         // Apply rotation around X-axis
         mat4.rotateX(transformation, transformation, rotation[0]);
-    
+
         // Apply rotation around Y-axis
         mat4.rotateY(transformation, transformation, rotation[1]);
-    
+
         // Apply rotation around Z-axis
         mat4.rotateZ(transformation, transformation, rotation[2]);
-    
+
         return transformation;
     }
 
@@ -622,6 +646,7 @@ class Scene {
         }));
 
         return JSON.stringify({
+            bgColor: this.bgColor,
             objects: objectsData,
             lights: lightsData
         }, null, 2); // Pretty print with 2 spaces
@@ -671,8 +696,12 @@ class Scene {
                 );
             });
 
+            this.bgColor = data.bgColor
+
             // Reinitialize buffers
+            this.initShaders();
             this.initBuffers();
+            this.initRendering();
         } catch (error) {
             console.error("Failed to import JSON:", error);
         }

@@ -202,6 +202,13 @@ var Yellow_rubber = {
   "alpha"       : [ 10.0 ]
 };
 
+var Matte_visible = {
+  "mat_ambient" : [ 1, 1, 1 ],
+  "mat_diffuse" : [ 0.5, 0.5, 0.5 ],
+  "mat_specular": [ 0.05, 0.05, 0.05 ],
+  "alpha"       : [ 0.5 ]
+};
+
 const materials = [
   Brass,
   Bronze,
@@ -231,7 +238,8 @@ const materials = [
   Green_rubber,
   Red_rubber,
   White_rubber,
-  Yellow_rubber
+  Yellow_rubber,
+  Matte_visible
 ];
 
 materials.forEach(material => {

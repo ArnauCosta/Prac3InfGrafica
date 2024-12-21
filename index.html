@@ -19,10 +19,9 @@
           in vec3 VertexPosition;
           in vec3 VertexNormal;
           in vec2 VertexTexcoords; // Afegeix les coordenades de textura
-          uniform   float Scale;
 
           out vec3 N, ec;
-          out vec3 texCoord; // Coordenades de textura que passen al fragment shader
+          out vec2 texCoords; // Coordenades de textura que passen al fragment shader
           
           void main()  {
               N  = normalize(normalMatrix * VertexNormal);
@@ -30,8 +29,7 @@
               ec = vec3(ecPosition);
           
               gl_Position = projectionMatrix * ecPosition;
-              //texCoord = VertexTexcoords; // Assigna les coordenades de textura
-              texCoord = VertexPosition * Scale;
+              texCoords = VertexTexcoords; // Assigna les coordenades de textura
 
           }
       
@@ -64,10 +62,12 @@
           uniform int renderMode;
           
           in vec3 N, ec; // Normal and eye-coordinates from vertex shader
-          in vec3 texCoord;
+          in vec2 texCoords;
           out vec4 fragmentColor;
 
-          uniform sampler2D u_texture;
+          uniform sampler2D myTexture;
+          uniform float     repetition;
+          uniform float     Scale;
 
           uniform vec3 Color1;
           uniform vec3 Color2;
@@ -167,24 +167,6 @@
           }
 
           
-          vec3 phong (vec3 Kd, vec3 N, vec3 L, vec3 V) {
-            vec3  ambient  = Material.Ka * vec3(0.0);
-            vec3  diffuse  = vec3(0.0);
-            vec3  specular = vec3(0.0);
-        
-            float NdotL    = dot (N,L);
-            if (NdotL > 0.0) {
-                vec3  R       = reflect(-L, N);
-                float RdotV_n = pow(max(0.0, dot(R,V)), Material.alpha);
-        
-                diffuse  = NdotL   * Kd;
-                specular = RdotV_n * Material.Ks;
-            }
-        
-            return (ambient + diffuse + specular);
-          }
-
-          
           void main() {
             vec3 normal = normalize(N);
             vec3 viewDir = normalize(-ec);
@@ -192,14 +174,16 @@
             if (renderMode == 0) { // MATERIAL
                 vec3 color = computeLight(normal, viewDir, Material.Kd);
                 fragmentColor = vec4(color, 1.0);
-        
+
+                //fragmentColor = vec4(1.0, 0.0, 1.0, 1.0);
             } else if (renderMode == 1) { // IMATGE
-                vec4 texColor = texture(u_texture, texCoord.xy);
-                vec3 color = computeLight(normal, viewDir, Material.Kd) * vec3(texColor);
-                fragmentColor = vec4(color * 1.6, 1.0);
-        
+
+                // vec4 texColor = texture(myTexture, texCoords * repetition);
+                // fragmentColor = texture(myTexture, texCoords * repetition) * computeLight(normal, viewDir, Material.Kd) * 1.6;
+                fragmentColor = texture(myTexture, texCoords * repetition) * vec4(computeLight(normal, viewDir, Material.Kd), 1.0) * 1.6;
+
             } else if (renderMode == 2) { // SOL
-                float s = snoise(texCoord);
+                float s = snoise(vec3(texCoords, 1.0) * Scale);
                 s = clamp(abs(s)*2.6,0.0,1.0);
                 vec3 newKd = mix(Color1, Color2, s);
         
@@ -207,13 +191,14 @@
                 fragmentColor = vec4(color, 1.0);
         
             } else if (renderMode == 3) { // PROCEDURAL_NUVOLS
-                float s = snoise(texCoord)*0.5 + 0.5;
+                float s = snoise(vec3(texCoords * Scale, 1.0))*0.5 + 0.5;
                 s = clamp(abs(s)*2.6,0.0,1.0);
                 vec3 newKd = mix(Color1, Color2, s);
         
                 vec3 color = computeLight(normal, viewDir, newKd);
                 fragmentColor = vec4(color, 1.0);
-        
+                //fragmentColor = vec4(1.0, 0.0, 1.0, 1.0);
+
             } else if (renderMode == 4) { // WIREFRAMES
                 fragmentColor = vec4(1.0, 1.0, 1.0, 0.4);
         
@@ -324,9 +309,9 @@
                     <option value="torch.png">torch</option>
                     <option value="steve.png">steve</option>
                     <option value="abella.png">abella</option>
-                    <option value="mgat.png">mgat</option>
+                    <option value="mgat.png">gat minecraft</option>
                     <option value="senyal.png">senyal</option>
-                    <option value="cottage_diffuse3.png">cottage_diffuse3</option>
+                    <option value="earth.jpg">earth</option>
                   </select>
                 </div>
                 <div class="flex-grow-1"></div>
