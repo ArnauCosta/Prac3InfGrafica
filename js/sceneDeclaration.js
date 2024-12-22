@@ -3,9 +3,9 @@
 // --------------
 // const scene = new Scene([
 //     new WebGLObject("Cube2", exampleCube, White_rubber, mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, -1.0]), Scene.RENDER_MODES.IMATGE, {route: "gat.png"}),
-//     new WebGLObject("Cube4", exampleCube, White_rubber, mat4.translate(mat4.create(), mat4.create(), [0.0, 1.0, -1.0]), Scene.RENDER_MODES.WIREFRAMES),
+//     new WebGLObject("Cube4", exampleCube, Obsidian, mat4.translate(mat4.create(), mat4.create(), [0.0, 1.0, -1.0]), Scene.RENDER_MODES.WIREFRAMES),
 //     new WebGLObject("Cube5", exampleCube, White_rubber, mat4.translate(mat4.create(), mat4.create(), [1.0, 0.0, -1.0]), Scene.RENDER_MODES.PROCEDURAL_SOL, {color1: [1, 1, 1], color2: [1, 1, 2], scale: 5}),
-//     new WebGLObject("Cube3", exampleCube, White_rubber, mat4.translate(mat4.create(), mat4.create(), [1.0, 1.0, -1.0]), Scene.RENDER_MODES.PROCEDURAL_NUVOLS, {color1: [1, 1, 1], color2: [2, 1, 1], scale: 5}),
+//     new WebGLObject("Cube3", exampleCube, Gold, mat4.translate(mat4.create(), mat4.create(), [1.0, 1.0, -1.0]), Scene.RENDER_MODES.PROCEDURAL_NUVOLS, {color1: [1, 1, 1], color2: [2, 1, 1], scale: 5}),
 //     new WebGLObject("Cube6", exampleCube, White_rubber, mat4.translate(mat4.create(), mat4.create(), [-1.0, 0.0, -1.0]), Scene.RENDER_MODES.PROCEDURAL_NUVOLS, {color1: [1, 1, 1], color2: [2, 1, 1], scale: 10}),
 //     new WebGLObject("Cube7", exampleCube, White_rubber, mat4.translate(mat4.create(), mat4.create(), [0.0, -1.0, -1.0]), Scene.RENDER_MODES.PROCEDURAL_NUVOLS, {color1: [1, 10, 1], color2: [0, 1, 3], scale: 10}),
 //     new WebGLObject("Cube8", exampleCube, Matte_visible, mat4.translate(mat4.create(), mat4.create(), [-1.0, -1.0, -1.0]), Scene.RENDER_MODES.PROCEDURAL_NUVOLS, {color1: [1, 1, 1], color2: [2, 1, 1], scale: 5}),

@@ -1,5 +1,10 @@
 {
-  "bgColor": [0.95, 0.95, 0.95, 1],
+  "bgColor": [
+    0.95,
+    0.95,
+    0.95,
+    1
+  ],
   "objects": [
     {
       "name": "Steve",
@@ -1395,7 +1400,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.04502235725522041,
@@ -9227,7 +9233,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         -0.6536436080932617,
@@ -11787,7 +11794,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         -0.02080734260380268,
@@ -12257,7 +12265,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.9178106784820557,
@@ -12537,7 +12546,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.22945266962051392,
@@ -12817,7 +12827,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.22945266962051392,
@@ -13097,7 +13108,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.22945266962051392,
@@ -13377,7 +13389,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.22945266962051392,
@@ -13657,7 +13670,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -13937,7 +13951,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -14217,7 +14232,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -14497,7 +14513,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -14777,7 +14794,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -15057,7 +15075,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -15337,7 +15356,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -15617,7 +15637,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -15897,7 +15918,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -16177,7 +16199,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -16457,7 +16480,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -16737,7 +16761,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -17017,7 +17042,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -17297,7 +17323,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -17577,7 +17604,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -17857,7 +17885,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -18137,7 +18166,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -18417,7 +18447,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -18697,7 +18728,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -18977,7 +19009,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -19257,7 +19290,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -19537,7 +19571,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -19817,7 +19852,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -20097,7 +20133,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,
@@ -20377,7 +20414,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         0.27000001072883606,

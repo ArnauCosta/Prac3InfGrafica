@@ -260,7 +260,8 @@
         ],
         "alpha": [
           10
-        ]
+        ],
+        "name": "White_rubber"
       },
       "transformation": [
         1,
@@ -524,23 +525,24 @@
       },
       "material": {
         "ambient": [
+          0.05375,
           0.05,
-          0.05,
-          0.05
+          0.06625
         ],
         "diffuse": [
-          0.5,
-          0.5,
-          0.5
+          0.18275,
+          0.17,
+          0.22525
         ],
         "specular": [
-          0.7,
-          0.7,
-          0.7
+          0.332741,
+          0.328634,
+          0.346435
         ],
         "alpha": [
-          10
-        ]
+          38.4
+        ],
+        "name": "Obsidian"
       },
       "transformation": [
         1,
@@ -818,7 +820,8 @@
         ],
         "alpha": [
           10
-        ]
+        ],
+        "name": "White_rubber"
       },
       "transformation": [
         1,
@@ -1092,23 +1095,24 @@
       },
       "material": {
         "ambient": [
-          0.05,
-          0.05,
-          0.05
+          0.24725,
+          0.1995,
+          0.0745
         ],
         "diffuse": [
-          0.5,
-          0.5,
-          0.5
+          0.75164,
+          0.60648,
+          0.22648
         ],
         "specular": [
-          0.7,
-          0.7,
-          0.7
+          0.628281,
+          0.555802,
+          0.366065
         ],
         "alpha": [
-          10
-        ]
+          51.2
+        ],
+        "name": "Gold"
       },
       "transformation": [
         1,
@@ -1398,7 +1402,8 @@
         ],
         "alpha": [
           10
-        ]
+        ],
+        "name": "White_rubber"
       },
       "transformation": [
         1,
@@ -1688,7 +1693,8 @@
         ],
         "alpha": [
           10
-        ]
+        ],
+        "name": "White_rubber"
       },
       "transformation": [
         1,
@@ -1978,7 +1984,8 @@
         ],
         "alpha": [
           0.5
-        ]
+        ],
+        "name": "Matte_visible"
       },
       "transformation": [
         1,
@@ -2268,7 +2275,8 @@
         ],
         "alpha": [
           51.2
-        ]
+        ],
+        "name": "Gold"
       },
       "transformation": [
         1,
@@ -2558,7 +2566,8 @@
         ],
         "alpha": [
           76.8
-        ]
+        ],
+        "name": "Ruby"
       },
       "transformation": [
         1,

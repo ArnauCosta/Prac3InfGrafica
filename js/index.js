@@ -82,59 +82,64 @@ var activeTab = "models"
 function activateTab(tab) {
     var tabModels = document.getElementById("aria-models")
     var tabLight = document.getElementById("aria-light")
-    var tabAnimation = document.getElementById("aria-animation")
+    var tabShader = document.getElementById("aria-shader")
 
     var btnModels = document.getElementById("models-btn")
     var btnLight = document.getElementById("light-btn")
-    var btnAnimation = document.getElementById("animation-btn")
+    var btnShader = document.getElementById("shader-btn")
 
     var objectSelect = document.getElementById("objects")
     var lightSelect = document.getElementById("lights")
+
+    var btnAfegir = document.getElementById("btn-afegir-obj")
 
     switch (tab) {
         case "models":
             tabModels.classList.remove("d-none")
             tabLight.classList.add("d-none")
-            tabAnimation.classList.add("d-none")
+            tabShader.classList.add("d-none")
 
             btnModels.classList.add("active")
             btnLight.classList.remove("active")
-            btnAnimation.classList.remove("active")
+            btnShader.classList.remove("active")
 
             objectSelect.classList.remove("d-none")
             lightSelect.classList.add("d-none")
+            btnAfegir.classList.remove("d-none")
             activeTab = "models"
             showSelectedInfoObjects()
             break;
         
         case "light":
             tabLight.classList.remove("d-none")
-            tabAnimation.classList.add("d-none")
+            tabShader.classList.add("d-none")
             tabModels.classList.add("d-none")
 
             btnModels.classList.remove("active")
             btnLight.classList.add("active")
-            btnAnimation.classList.remove("active")
+            btnShader.classList.remove("active")
 
             objectSelect.classList.add("d-none")
             lightSelect.classList.remove("d-none")
+            btnAfegir.classList.remove("d-none")
             activeTab = "light"
             showSelectedInfoLight()
             break;
 
-        case "animation":
-            tabAnimation.classList.remove("d-none")
+        case "shader":
+            tabShader.classList.remove("d-none")
             tabLight.classList.add("d-none")
             tabModels.classList.add("d-none")
 
             btnModels.classList.remove("active")
             btnLight.classList.remove("active")
-            btnAnimation.classList.add("active")
+            btnShader.classList.add("active")
 
-            objectSelect.classList.remove("d-none")
+            objectSelect.classList.add("d-none")
             lightSelect.classList.add("d-none")
-            activeTab = "animation"
-            showSelectedInfoAnimation()
+            btnAfegir.classList.add("d-none")
+            activeTab = "shader"
+            showSelectedInfoShader()
             break;
     
         default:
@@ -261,8 +266,11 @@ function setLight() {
     showSelectedInfoLight()
 }
 
-function setAnimation() {
-    
+function setShader() {
+    var range = document.getElementById("toon-shader").value
+
+    scene.setToonShaderLevel(range)
+    scene.requestAnimationFrame()
 }
 
 
@@ -450,7 +458,7 @@ function showSelectedInfoLight() {
 
 }
 
-function showSelectedInfoAnimation() {
+function showSelectedInfoShader() {
     const infoDiv = document.getElementById("inf-div");
     infoDiv.innerHTML = "";
 }
@@ -484,7 +492,7 @@ function newObject() {
         objectSelect.appendChild(option);
     
         scene.requestAnimationFrame()
-    } else if (activeTab == "animation") {
+    } else if (activeTab == "shader") {
 
     }
 }

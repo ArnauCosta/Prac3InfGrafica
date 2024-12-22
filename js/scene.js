@@ -398,6 +398,10 @@ class Scene {
         this.program.PositionIndex = this.gl.getUniformLocation(this.program, "Light.Position");
         this.program.ScaleIndex = this.gl.getUniformLocation(this.program, "Scale");
 
+        this.program.ToonShadingIndex = this.gl.getUniformLocation(this.program, "levels");
+        this.setToonShaderLevel(1000.0)
+
+
         this.program.Color1Index = this.gl.getUniformLocation(this.program, "Color1");
         this.program.Color2Index = this.gl.getUniformLocation(this.program, "Color2");
 
@@ -419,6 +423,7 @@ class Scene {
 
         this.gl.uniform3f(this.program.Color1Index, 1.0, 1.0, 1.0);
         this.gl.uniform3f(this.program.Color2Index, 1.0, 1.0, 1.0);
+
     }
 
     initRendering() {
@@ -538,6 +543,10 @@ class Scene {
         return this.webGlLights
     }
 
+    setToonShaderLevel(level){
+        this.gl.uniform1f(this.program.ToonShadingIndex, level);
+    }
+
     static getCameraMatrix(phi, zeta, radius) {
 
         // coordenadas esféricas a rectangulares: https://en.wikipedia.org/wiki/Spherical_coordinate_system
@@ -630,7 +639,8 @@ class Scene {
                 ambient: obj.material.mat_ambient,
                 diffuse: obj.material.mat_diffuse,
                 specular: obj.material.mat_specular,
-                alpha: obj.material.alpha
+                alpha: obj.material.alpha,
+                name: obj.material.name
             },
             transformation: Array.from(obj.transformation),
             renderMode: obj.renderMode,
@@ -669,7 +679,8 @@ class Scene {
                     mat_ambient: objData.material.ambient,
                     mat_diffuse: objData.material.diffuse,
                     mat_specular: objData.material.specular,
-                    alpha: objData.material.alpha
+                    alpha: objData.material.alpha,
+                    name: objData.material.name
                 };
 
                 const transformation = new Float32Array(objData.transformation);
@@ -699,7 +710,7 @@ class Scene {
             this.bgColor = data.bgColor
 
             // Reinitialize buffers
-            this.initShaders();
+            //this.initShaders();
             this.initBuffers();
             this.initRendering();
         } catch (error) {

@@ -68,6 +68,7 @@
           uniform sampler2D myTexture;
           uniform float     repetition;
           uniform float     Scale;
+          uniform float levels;
 
           uniform vec3 Color1;
           uniform vec3 Color2;
@@ -81,12 +82,15 @@
             for (int i = 0; i < numLights; i++) {
                 vec3 lightDir = normalize(Lights[i].Position - ec);
                 vec3 R = reflect(-lightDir, normal);
-                
+        
                 // Ambient
                 vec3 ambient = Lights[i].La * Material.Ka;
-                
-                // Difusa
+        
+                // Difusa amb Toon Shading
                 float diff = max(dot(normal, lightDir), 0.0);
+                //float levels2 = 1000.0;
+                float scaleFactor = 1.0 / levels;
+                diff = ceil(diff * levels) * scaleFactor; // Quantització
                 vec3 diffuse = diff * Lights[i].Ld * Kd;
         
                 // Especular
@@ -100,7 +104,7 @@
             }
         
             return color;
-          }
+        }
           
           float snoise(vec3 v) {
             
@@ -219,7 +223,7 @@
       </canvas>
   
       <div class="d-flex flex-column">
-        <button class="btn btn-primary rounded-0" style="width: 110px;" onclick="newObject()">
+        <button id="btn-afegir-obj" class="btn btn-primary rounded-0" style="width: 110px;" onclick="newObject()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
           </svg>
@@ -233,14 +237,14 @@
       <div class="m-2 flex-grow-1">
         <div class="d-flex w-100">
           <h1 class="text-center w-100 mb-0">
-            Options
+            Opcions
           </h1>
         </div>
         <hr>
         <nav class="nav nav-pills flex-column flex-sm-row">
           <button id="models-btn" class="flex-sm-fill text-sm-center nav-link active" aria-current="page" onclick="activateTab('models')">Models</button>
           <button id="light-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('light')">Llums</button>
-          <button id="animation-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('animation')">Animation</button>
+          <button id="shader-btn" class="flex-sm-fill text-sm-center nav-link" onclick="activateTab('shader')">Shader</button>
         </nav>
         <br>
         <div id="aria-models">
@@ -312,6 +316,7 @@
                     <option value="mgat.png">gat minecraft</option>
                     <option value="senyal.png">senyal</option>
                     <option value="earth.jpg">earth</option>
+                    <option value="grass.png">grass</option>
                   </select>
                 </div>
                 <div class="flex-grow-1"></div>
@@ -418,12 +423,17 @@
             Delete
           </button>
         </div>
-        <div id="aria-animation" class="d-none">
-          <label for="bootstrap-select" class="form-label">Animation:</label>
-          <select class="form-select" name="materials" id="materials"></select>
+        <div id="aria-shader" class="d-none">
+          <div class="flex-grow-1">
+            <label for="sol-scale" class="form-label">Toon shader:</label>
+            <input type="range" class="form-range" id="toon-shader" min="0.001" max="100" step="0.001" value="1">
+          </div>
           <br>
-          <button onclick="setAnimation()" class="btn btn-primary">
-            Set
+          <button onclick="setShader()" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-90deg-down" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M4.854 14.854a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V3.5A2.5 2.5 0 0 1 6.5 1h8a.5.5 0 0 1 0 1h-8A1.5 1.5 0 0 0 5 3.5v9.793l3.146-3.147a.5.5 0 0 1 .708.708z"/>
+            </svg>
+            Aplica
           </button>
         </div>
       </div>
@@ -458,7 +468,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="myOptionsModalLabel">Your Options</h5>
+            <h5 class="modal-title" id="myOptionsModalLabel">Configuracio</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">

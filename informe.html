@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blender UdG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="text-center py-4">
+        <h1>Blender UdG</h1>
+        <p><strong>Projecte desenvolupat per Arnau Costa Pont</strong></p>
+    </header>
+
+    <main class="container my-4">
+        <section>
+            <h2>Visió General del Projecte</h2>
+            <p>El projecte ha consistit en el desenvolupament d'una llibreria anomenada <code>Scene</code>. Aquesta llibreria inclou una classe <code>Scene</code> composta per un array de <code>WebGLObject</code> i <code>WebGLLight</code>.</p>
+        </section>
+
+        <section>
+            <h2>Interfície de l'Aplicatiu</h2>
+            <h3>Part Central</h3>
+            <p>La part central llista tots els objectes o totes les llums depenent de la pestanya a la que s'està. Aquesta llista permetrà afegir un objecte, és important que no es posin noms duplicats amb els objectes ja existents.</p>
+            <p>Després es permetrà realitzar operacions amb els objectes seleccionats. Quan es seleccionen tots els objectes als quals es vol aplicar una operació, el botó "Aplicar" agafarà la configuració seleccionada a la pestanya esquerra i la aplicarà als objectes seleccionats.</p>
+            <p><strong style="color:red;">És important destacar que, en la part de la transformació, que és on es poden moure, rotar i escalar els objectes, si no es selecciona el checkbox "Aplicar transformació", no s'aplicarà la transformació i només es canviarà el material i el mode de renderització.</strong></p>
+
+            <h3>Render Mode i Materials</h3>
+            <p>El "Render Mode" permet seleccionar qualsevol mode de renderització disponible a l'aplicatiu i permetrà configurar els paràmetres associats, si en té. Per exemple, es poden configurar els colors en les textures procedurals o seleccionar una imatge com a textura. Les imatges es podran seleccionar d'una llista predefinida, igual que els materials, que també estaran disponibles en una llista predefinida.</p>
+            <p>Si es vol importar una geometria personalitzada, es pot fer enganxant-la en format JSON.</p>
+        </section>
+
+        <section>
+            <h2>Detalls d'Implementació</h2>
+            <p>Per a la gestió del "Render Mode", cada <code>WebGLObject</code> té un flag enllaçat al seu mode de renderització a través de <code>Scene.RENDER_MODES</code>. Quan es crida el mètode <code>render()</code> de la classe <code>Scene</code>, aquest crida el mètode <code>render()</code> de cada objecte <code>WebGLObject</code>, enviant el mode de renderització corresponent. A GLSL, aquest flag es fa servir per decidir com es renderitza l'objecte.</p>
+
+            <p>En el cas de les llums, aquestes es gestionen mitjançant un array de fins a 10 llums. Quan s'apliquen al model, es recorren totes les llums i se'ls hi realitzen les operacions necessàries per tal que afectin el model de la manera correcta.</p>
+        </section>
+
+        <section>
+            <h2>Exemples de Codi</h2>
+            <h3>Declaració de l'Escena</h3>
+            <pre><code>const scene = new Scene([
+    new WebGLObject("Cube", exampleCube, White_rubber, Scene.TransformationMatrix([0, 0, 0], [0, 0, 0]), Scene.RENDER_MODES.MATERIAL, {}, 0.5),
+    new WebGLLight("Light1", [-1.1, 1.5, 2.0], [1.0, 1.0, 1.0], 1),
+]);
+
+scene.start();
+</code></pre>
+
+            <h3>Creació d'un WebGLObject</h3>
+            <pre><code>new WebGLObject("Cube", exampleCube, White_rubber, Scene.TransformationMatrix([0, 0, 0], [0, 0, 0]), Scene.RENDER_MODES.MATERIAL, {}, 0.5);
+</code></pre>
+
+            <h3>Creació d'un WebGLLight</h3>
+            <pre><code>new WebGLLight("Light1", [-1.1, 1.5, 2.0], [1.0, 1.0, 1.0], 1);
+</code></pre>
+        </section>
+
+        <section>
+            <h2>Notes Addicionals</h2>
+            <ul>
+                <li>Els noms per a <code>WebGLObject</code> i <code>WebGLLight</code> han de ser únics i no es poden repetir.</li>
+                <li>El mode de renderització d'un <code>WebGLObject</code> es pot seleccionar utilitzant <code>Scene.RENDER_MODES</code>, que és un enumeració amb les opcions següents:
+                    <ul>
+                        <li><code>MATERIAL</code>: 0</li>
+                        <li><code>IMATGE</code>: 1</li>
+                        <li><code>PROCEDURAL_SOL</code>: 2</li>
+                        <li><code>PROCEDURAL_NUVOLS</code>: 3</li>
+                        <li><code>WIREFRAMES</code>: 4</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+        
+        <!-- Nova Secció per Explicar sobre la selecció i modificació dels objectes -->
+        <section>
+            <h3>Modificacions dels Objectes Seleccionats</h3>
+            <p><strong style="color:red;">Si no es seleccionen objectes de la llista, no es podran aplicar modificacions de material i transformació.</strong></p>
+            <p>Per aplicar modificacions a més d'un objecte a la vegada, s'ha de seleccionar tots aquells objectes que es volguin modificar. Per fer això, es pot clicar a múltiples objectes mentre es clica <code>ctrl</code> al teclat. Si es vol seleccionar un rang d'objectes, es poden clicar els dos objectes extrems del rang mentre es clica <code>shift</code>.</p>
+        </section>
+        
+    </main>
+
+    <footer class="bg-light text-center py-3">
+        <p class="mb-0">&copy; 2024 Blender UdG Report</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
