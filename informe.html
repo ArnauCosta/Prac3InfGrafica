@@ -29,7 +29,10 @@
             <p>El "Render Mode" permet seleccionar qualsevol mode de renderització disponible a l'aplicatiu i permetrà configurar els paràmetres associats, si en té. Per exemple, es poden configurar els colors en les textures procedurals o seleccionar una imatge com a textura. Les imatges es podran seleccionar d'una llista predefinida, igual que els materials, que també estaran disponibles en una llista predefinida.</p>
             <p>Si es vol importar una geometria personalitzada, es pot fer enganxant-la en format JSON.</p>
         </section>
-
+        <section>
+            <h3 style="color:red;">Important:</h3>
+            <p><strong style="color:red;">Les escenes que he preparat estan ubicades a la carpeta "escena" i es poden importar utilitzant el botó situat a la part superior esquerra de l'aplicatiu.</strong></p>
+        </section>
         <section>
             <h2>Detalls d'Implementació</h2>
             <p>Per a la gestió del "Render Mode", cada <code>WebGLObject</code> té un flag enllaçat al seu mode de renderització a través de <code>Scene.RENDER_MODES</code>. Quan es crida el mètode <code>render()</code> de la classe <code>Scene</code>, aquest crida el mètode <code>render()</code> de cada objecte <code>WebGLObject</code>, enviant el mode de renderització corresponent. A GLSL, aquest flag es fa servir per decidir com es renderitza l'objecte.</p>
@@ -73,7 +76,7 @@ scene.start();
             </ul>
             <p>Per veure el projecte complet i accedir al codi font, podeu visitar el següent enllaç al repositori de GitHub: <a href="https://github.com/ArnauCosta/Prac3InfGrafica" target="_blank">https://github.com/ArnauCosta/Prac3InfGrafica</a>.</p>
         </section>
-        
+
         <section>
             <h3>Modificacions dels Objectes Seleccionats</h3>
             <p><strong style="color:red;">Si no es seleccionen objectes de la llista, no es podran aplicar modificacions de material i transformació.</strong></p>
